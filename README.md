@@ -1,6 +1,6 @@
 # himama-dl
 
-A simple scraper for downloading all "Activities" (photos/videos) of your kids from [HiMama](https://www.himama.com/).
+An unofficial bulk downloader for [HiMama](https://www.himama.com) "Activities" (photos/videos).
 
 This scrapes your kid's activities through the website, and it's likely to be quite brittle.
 
