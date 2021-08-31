@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -13,16 +14,13 @@ import (
 )
 
 func main() {
+	username, password, err := fetchCredentials()
+	if err != nil {
+		fmt.Println("Error colleting credentials:", err)
+		return
+	}
 
 	fmt.Println("himama-dl")
-
-	var username string
-	var password string
-
-	fmt.Print("Username: ")
-	fmt.Scanf("%s", &username)
-	fmt.Print("Password: ")
-	fmt.Scanf("%s", &password)
 
 	client, err := himama.NewClient(username, password)
 	if err != nil {
@@ -48,6 +46,24 @@ func main() {
 			return
 		}
 	}
+}
+
+func fetchCredentials() (username, password string, err error) {
+	flag.StringVar(&username, "username", "", "HiMama username (ie, your email)")
+	flag.StringVar(&password, "password", "", "HiMama password")
+	flag.Parse()
+
+	if username == "" {
+		fmt.Print("Username: ")
+		fmt.Scanf("%s", &username)
+	}
+
+	if password == "" {
+		fmt.Print("Password: ")
+		fmt.Scanf("%s", &password)
+	}
+
+	return
 }
 
 func scrape(client *himama.Client, child himama.Child) error {
