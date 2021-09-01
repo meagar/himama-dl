@@ -14,11 +14,11 @@ A typical page of contains activities that look like this:
 `himama-dl` will download each attached photo or video and name it according to its "Added by", "Date", "Title', and a short hash to ensure uniqueness, for example:
 
 ```
-2021 08 27 - Preschool 2 Room - Look what I m doing today - fef462ff.jpeg
-2021 08 30 - Preschool 2 Room - Look what I m doing today - 3ebdeddb.jpeg
-2021 08 30 - Preschool 2 Room - Look what I m doing today - 70cc530f.jpeg
-2021 08 30 - Preschool 2 Room - Look what I m doing today - adeff2e9.jpeg
-2021 08 30 - Preschool 2 Room - Look what I m doing today - d36a1849.jpeg
+2021-08-17 - Preschool Room - Look what I'm doing today - a4993b62.mov
+2021-08-18 - Preschool Room - Look what I'm doing today - 1e3db443.jpeg
+2021-08-18 - Preschool Room - Look what I'm doing today - cec982de.mov
+2021-08-19 - Preschool Room - Look what I'm doing today - 58af6832.jpeg
+2021-08-19 - Preschool Room - Look what I'm doing today - 8f0231b4.movg
 ```
 
 ## Installation
