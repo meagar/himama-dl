@@ -47,6 +47,7 @@ func main() {
 			return
 		}
 	}
+	fmt.Printf("Total: %d\nDownloaded %d\nAlready Downloaded: %d\n", total, completed, skipped)
 }
 
 func fetchCredentials() (username, password string, err error) {
@@ -67,12 +68,12 @@ func fetchCredentials() (username, password string, err error) {
 	return
 }
 
-var total, completed int32
+var total, completed, skipped int32
 
 func scrape(client *himama.Client, child himama.Child) error {
 	mkdir("./" + child.Name)
 
-	work := spawnActivityWorkers(client, child)
+	work := scrapeActivities(client, child)
 
 	// blocks until all downloads are finished
 	spawnDownloadWorkers(child, work)
@@ -95,9 +96,11 @@ func spawnDownloadWorkers(child himama.Child, work <-chan himama.Activity) {
 			dest := "./" + child.Name + "/" + filename
 			if !fileExists(dest) {
 				download(activity.MediaURL, dest)
+				atomic.AddInt32(&completed, 1)
+			} else {
+				atomic.AddInt32(&skipped, 1)
 			}
 
-			atomic.AddInt32(&completed, 1)
 			fmt.Printf("%d/%d: %s\n", completed, total, filename)
 			<-tickets
 		}(activity)
@@ -122,27 +125,37 @@ func download(srcURL, destPath string) {
 	}
 }
 
-func spawnActivityWorkers(client *himama.Client, child himama.Child) <-chan himama.Activity {
-	work := make(chan himama.Activity, 20)
+// Scraps the activity index pages
+// Returns a channel over which activity media links (ie links to S3 objects) are sent
+func scrapeActivities(client *himama.Client, child himama.Child) <-chan himama.Activity {
+	work := make(chan himama.Activity, 2000)
+
+	wg := sync.WaitGroup{}
+	tickets := make(chan struct{}, 5)
 
 	go func() {
-		wg := sync.WaitGroup{}
-		for page := 1; ; page++ {
-			activities, err := client.Activities(child, page)
-			if err != nil {
-				panic(err)
-			}
-			if len(activities) == 0 {
-				break
-			}
-
-			atomic.AddInt32(&total, int32(len(activities)))
+		done := false
+		for page := 1; !done; page++ {
 			wg.Add(1)
+			tickets <- struct{}{}
+			page := page
 			go func() {
 				defer wg.Done()
-				for _, activity := range activities {
-					work <- activity
+
+				activities, err := client.Activities(child, page)
+				if err != nil {
+					panic(err)
 				}
+
+				if len(activities) == 0 {
+					done = true
+				} else {
+					atomic.AddInt32(&total, int32(len(activities)))
+					for _, activity := range activities {
+						work <- activity
+					}
+				}
+				<-tickets
 			}()
 		}
 
