@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	fmt.Println("himama-dl v0.0.2")
+	fmt.Println("himama-dl v0.0.3")
 
 	username, password, err := fetchCredentials()
 	if err != nil {
