@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/meagar/himama-dl/internal/himama"
+	"golang.org/x/sync/semaphore"
 )
 
 func main() {
@@ -84,13 +86,14 @@ func scrape(client *himama.Client, child himama.Child) error {
 func spawnDownloadWorkers(child himama.Child, work <-chan himama.Activity) {
 	wg := sync.WaitGroup{}
 	// These workers hit S3, so we can parallelize pretty heavily
-	tickets := make(chan struct{}, 10)
+	sem := semaphore.NewWeighted(10)
 
 	for activity := range work {
-		tickets <- struct{}{}
+		sem.Acquire(context.Background(), 1)
 		wg.Add(1)
 		go func(activity himama.Activity) {
 			defer wg.Done()
+			defer sem.Release(1)
 			filename := activity.SuggestedLocalFilename()
 
 			dest := "./" + child.Name + "/" + filename
@@ -102,7 +105,6 @@ func spawnDownloadWorkers(child himama.Child, work <-chan himama.Activity) {
 			}
 
 			fmt.Printf("%d/%d: %s\n", completed, total, filename)
-			<-tickets
 		}(activity)
 	}
 
@@ -131,31 +133,31 @@ func scrapeActivities(client *himama.Client, child himama.Child) <-chan himama.A
 	work := make(chan himama.Activity, 2000)
 
 	wg := sync.WaitGroup{}
-	tickets := make(chan struct{}, 5)
+	sem := semaphore.NewWeighted(5)
 
 	go func() {
 		done := false
 		for page := 1; !done; page++ {
 			wg.Add(1)
-			tickets <- struct{}{}
+			sem.Acquire(context.Background(), 1)
+
 			page := page
 			go func() {
+				defer sem.Release(1)
 				defer wg.Done()
 
-				activities, err := client.Activities(child, page)
-				if err != nil {
+				if activities, err := client.Activities(child, page); err != nil {
 					panic(err)
-				}
-
-				if len(activities) == 0 {
-					done = true
 				} else {
+					if len(activities) == 0 {
+						done = true
+					}
+
 					atomic.AddInt32(&total, int32(len(activities)))
 					for _, activity := range activities {
 						work <- activity
 					}
 				}
-				<-tickets
 			}()
 		}
 
