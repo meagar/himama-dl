@@ -172,14 +172,15 @@ func selectChildren(children []himama.Child) ([]himama.Child, error) {
 		return nil, fmt.Errorf("no children found")
 	}
 
-	if len(children) == 1 {
-		// TODO: Test this codepath
-		fmt.Println("Found 1 child:")
-		fmt.Printf("%s (%s)\n", children[0].Name, children[0].ID)
-		fmt.Printf("Press return to continue")
-		fmt.Scan()
-		return nil, fmt.Errorf("TODO: Impmement single child download")
-	}
+	//  single child codepath errors, so use multi-child codepath instead
+	
+	//if len(children) == 1 {
+	//	fmt.Println("Found 1 child:")
+	//	fmt.Printf("%s (%s)\n", children[0].Name, children[0].ID)
+	//	fmt.Printf("Press return to continue")
+	//	fmt.Scan()
+	//	return nil, fmt.Errorf("TODO: Impmement single child download")
+	//}
 
 	var choice int
 	for {
