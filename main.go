@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"regexp"
 
 	"github.com/meagar/himama-dl/internal/himama"
 )
@@ -50,19 +52,23 @@ func main() {
 	fmt.Printf("Total: %d\nDownloaded %d\nAlready Downloaded: %d\n", total, completed, skipped)
 }
 
-func fetchCredentials() (username, password string, err error) {
+func fetchCredentials() (username string, password string, err error) {
 	flag.StringVar(&username, "username", "", "HiMama username (ie, your email)")
 	flag.StringVar(&password, "password", "", "HiMama password")
 	flag.Parse()
 
 	if username == "" {
 		fmt.Print("Username: ")
-		fmt.Scanf("%s", &username)
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		username = scanner.Text()
 	}
 
 	if password == "" {
 		fmt.Print("Password: ")
-		fmt.Scanf("%s", &password)
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		password = scanner.Text()
 	}
 
 	return
@@ -91,7 +97,7 @@ func spawnDownloadWorkers(child himama.Child, work <-chan himama.Activity) {
 		wg.Add(1)
 		go func(activity himama.Activity) {
 			defer wg.Done()
-			filename := activity.SuggestedLocalFilename()
+			filename := filterWindowsFilename(activity.SuggestedLocalFilename())
 
 			dest := "./" + child.Name + "/" + filename
 			if !fileExists(dest) {
@@ -219,4 +225,14 @@ func fileExists(path string) bool {
 	}
 
 	panic(err)
+}
+
+func filterWindowsFilename(input string) string {
+	// Define a regular expression to match characters that are not allowed in Windows filenames
+	regex := regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F]`)
+
+	// Replace disallowed characters with an underscore
+	result := regex.ReplaceAllString(input, "_")
+
+	return result
 }
