@@ -1,3 +1,7 @@
+# Known to be broken. Accepting PRs.
+
+---
+
 # himama-dl
 
 An unofficial bulk downloader for [HiMama](https://www.himama.com) "Activities" (photos/videos).
