@@ -1,5 +1,7 @@
 # Known to be broken. Accepting PRs.
 
+This worked for me two years ago when my oldest child left daycare, and I haven't touched it since. It scrapes the HiMama website and as their site changes, it will break. My youngest is now leaving daycare so I'll put a fixed version up in coming weeks, and then I'll have no opportunity to work on it further.
+
 ---
 
 # himama-dl
