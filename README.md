@@ -28,7 +28,7 @@ A typical page of contains activities that look like this:
 ## Installation
 
 ```
-go install github.com/meagar/himama-dl
+go install github.com/meagar/himama-dl@latest
 ```
 
 ## Usage
