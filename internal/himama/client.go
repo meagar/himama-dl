@@ -157,7 +157,7 @@ func getLoginForm(client *http.Client) (csrfToken []byte, err error) {
 	}
 
 	// TODO: Using regex to parse HTML? Why not.
-	re := regexp.MustCompile(`<meta name=csrf-token content=([a-zA-Z0-9_\/+\-]+=*) />`)
+	re := regexp.MustCompile(`<meta name=csrf-token content=([a-zA-Z0-9\/+_-]+) *\/>`)
 	match := re.FindSubmatch(body)
 	if len(match) != 2 {
 		//return nil, fmt.Errorf("GET %s in %s: Cannot find authenticity token in response", LoginURL, body)
